@@ -42,3 +42,5 @@ repos:
     hooks:
       - id: pydocstyle
         args: [--convention=google]
+        additional_dependencies:
+          - tomli
