@@ -1,6 +1,9 @@
 """Case study."""
 import pandas as pd
 
+DATE_COLUMN = "Datum (Anlage)"
+TIMESTAMP_COLUMN = "Zeit (Anlage)"
+
 INT_COLUMNS = [
     "Nacelle Position (avg)",
     "Feature 0",
@@ -14,10 +17,7 @@ INT_COLUMNS = [
 
 FLOAT_COLUMNS = ["Feature 26"]
 
-INCONSISTENT_COLUMNS = [
-    "Wind Speed (avg)",
-    "Active Power (avg)",
-]
+INCONSISTENT_COLUMNS = ["Wind Speed (avg)", "Active Power (avg)"]
 
 
 def drop_rows(df: pd.DataFrame) -> pd.DataFrame:
@@ -30,13 +30,13 @@ def drop_rows(df: pd.DataFrame) -> pd.DataFrame:
         pandas DataFrame
     """
     # days with too few data entries
-    date_count = df["Datum (Anlage)"].value_counts(sort=False).reset_index()
-    date_list = date_count[date_count["count"] == 1]["Datum (Anlage)"]
+    date_count = df[DATE_COLUMN].value_counts(sort=False).reset_index()
+    date_list = date_count[date_count["count"] == 1][DATE_COLUMN]
 
-    new_df = df[~df["Datum (Anlage)"].isin(date_list)]
+    new_df = df[~df[DATE_COLUMN].isin(date_list)]
 
     # duplicate timestamps
-    new_df = new_df.drop_duplicates(subset=["Zeit (Anlage)"]).copy()
+    new_df = new_df.drop_duplicates(subset=[TIMESTAMP_COLUMN]).reset_index(drop=True)
 
     return new_df
 
@@ -50,13 +50,10 @@ def transform_column_types(df: pd.DataFrame) -> None:
         df: pandas DataFrame
     """
     # datetime
-    df["Zeit (Anlage)"] = pd.to_datetime(
-        df["Datum (Anlage)"] + df["Zeit (Anlage)"], format="%d.%m.%y%H:%M:%S"
+    df[TIMESTAMP_COLUMN] = pd.to_datetime(
+        df[DATE_COLUMN] + df[TIMESTAMP_COLUMN], format="%d.%m.%y%H:%M:%S"
     )
-    df["Datum (Anlage)"] = pd.to_datetime(df["Datum (Anlage)"], format="%d.%m.%y")
-
-    for column in INCONSISTENT_COLUMNS:
-        df[column] = pd.to_numeric(df[column], errors="coerce")
+    df[DATE_COLUMN] = pd.to_datetime(df[DATE_COLUMN], format="%d.%m.%y")
 
     for column in INT_COLUMNS:
         try:
@@ -67,6 +64,9 @@ def transform_column_types(df: pd.DataFrame) -> None:
 
     for column in FLOAT_COLUMNS:
         df[column] = df[column].astype(float)
+
+    for column in INCONSISTENT_COLUMNS:
+        df[column] = pd.to_numeric(df[column], errors="coerce")
 
 
 def drop_columns(df: pd.DataFrame) -> None:
@@ -105,3 +105,6 @@ if __name__ == "__main__":
     drop_columns(df)
     transform_column_types(df)
     df = drop_rows(df)
+
+    df.to_csv("output.csv", sep=";", index=False, decimal=",")
+    print("Export completed.")
