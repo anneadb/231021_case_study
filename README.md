@@ -15,9 +15,9 @@
 - The first (unnamed) column is not an id since there are duplicates but I also could not see a pattern in the data indicating its meaning.
 - For some columns the decimal separator was unclear. Under normal circumstances I would talk to someone on the team sourcing the data to figure out what was wrong with the data collection.
 - There seems to be some error happening in the data collection regularly on December 31st (only one data entry) and around end of March (138 instead of 144 data entries).
-- For 42 Timestamps there are two data points. There should be some logic to decide which one to keep.
+- For 42 timestamps there are two data points. There should be some logic to decide which one to keep.
 
-# Plotting
+## Insights
 
 - Many features with seasonal effects (e.g. 5, 6 & 7)
 - Features with increasing values over time: 0 & 34
